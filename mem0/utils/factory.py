@@ -24,16 +24,17 @@ class LlmFactory:
         class_type = cls.provider_to_class.get(provider_name)
         if class_type:
             llm_instance = load_class(class_type)
-            base_config = BaseLlmConfig(**config)
+            base_config = BaseLlmConfig(**config)  # mem0/configs/llms/base.py
             return llm_instance(base_config)
         else:
             raise ValueError(f"Unsupported Llm provider: {provider_name}")
-        
+
+
 class EmbedderFactory:
     provider_to_class = {
         "openai": "mem0.embeddings.openai.OpenAIEmbedding",
         "ollama": "mem0.embeddings.ollama.OllamaEmbedding",
-        "huggingface": "mem0.embeddings.huggingface.HuggingFaceEmbedding"
+        "huggingface": "mem0.embeddings.huggingface.HuggingFaceEmbedding",
     }
 
     @classmethod
@@ -44,4 +45,3 @@ class EmbedderFactory:
             return embedder_instance
         else:
             raise ValueError(f"Unsupported Embedder provider: {provider_name}")
-        

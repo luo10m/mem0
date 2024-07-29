@@ -35,9 +35,7 @@ class MemoryItem(BaseModel):
     metadata: Dict[str, Any] = Field(
         default_factory=dict, description="Additional metadata for the text data"
     )
-    score: Optional[float] = Field(
-        None, description="The score associated with the text data"
-    )
+    score: Optional[float] = Field(None, description="The score associated with the text data")
 
 
 class MemoryConfig(BaseModel):
@@ -58,9 +56,7 @@ class MemoryConfig(BaseModel):
         default=os.path.join(mem0_dir, "history.db"),
     )
     collection_name: str = Field(default="mem0", description="Name of the collection")
-    embedding_model_dims: int = Field(
-        default=1536, description="Dimensions of the embedding model"
-    )
+    embedding_model_dims: int = Field(default=1536, description="Dimensions of the embedding model")
 
 
 class Memory(MemoryBase):
@@ -78,19 +74,17 @@ class Memory(MemoryBase):
                 api_key=vector_store_config.api_key,
             )
         else:
-            raise ValueError(
-                f"Unsupported vector store type: {self.config.vector_store_type}"
-            )
+            raise ValueError(f"Unsupported vector store type: {self.config.vector_store_type}")
 
         self.llm = LlmFactory.create(self.config.llm.provider, self.config.llm.config)
         self.db = SQLiteManager(self.config.history_db_path)
         self.collection_name = self.config.collection_name
         self.vector_store.create_col(
             name=self.collection_name, vector_size=self.embedding_model.dims
-        )
+        )  # 创建 qdrant 向量数据库集合
         self.vector_store.create_col(
             name=self.collection_name, vector_size=self.embedding_model.dims
-        )
+        )  # 再次创建，以防上一个失败
         capture_event("mem0.init", self)
 
     @classmethod
@@ -124,13 +118,15 @@ class Memory(MemoryBase):
             filters (dict, optional): Filters to apply to the search. Defaults to None.
 
         Returns:
-            str: ID of the created memory.
+            List(dict): {id, event, data}
+            ###not this => str: ID of the created memory.
         """
         if metadata is None:
             metadata = {}
-        embeddings = self.embedding_model.embed(data)
 
-        filters = filters or {}
+        embeddings = self.embedding_model.embed(data)  # 构建输入数据的嵌入向量
+
+        filters = filters or {}  # 准备过滤器
         if user_id:
             filters["user_id"] = metadata["user_id"] = user_id
         if agent_id:
@@ -138,6 +134,7 @@ class Memory(MemoryBase):
         if run_id:
             filters["run_id"] = metadata["run_id"] = run_id
 
+        # 使用 LLM 从输入数据中提取记忆
         if not prompt:
             prompt = MEMORY_DEDUCTION_PROMPT.format(user_input=data, metadata=metadata)
         extracted_memories = self.llm.generate_response(
@@ -149,6 +146,7 @@ class Memory(MemoryBase):
                 {"role": "user", "content": prompt},
             ]
         )
+        # 然后，搜索现有的相似记忆
         existing_memories = self.vector_store.search(
             name=self.collection_name,
             query=embeddings,
@@ -165,13 +163,10 @@ class Memory(MemoryBase):
             for mem in existing_memories
         ]
         serialized_existing_memories = [
-            item.model_dump(include={"id", "text", "score"})
-            for item in existing_memories
-        ]
+            item.model_dump(include={"id", "text", "score"}) for item in existing_memories
+        ]  # BaseModel的 model_dump方法用于将模型对象转换为**字典**。include 参数指定了三个字段
         logging.info(f"Total existing memories: {len(existing_memories)}")
-        messages = get_update_memory_messages(
-            serialized_existing_memories, extracted_memories
-        )
+        messages = get_update_memory_messages(serialized_existing_memories, extracted_memories)
         # Add tools for noop, add, update, delete memory.
         tools = [ADD_MEMORY_TOOL, UPDATE_MEMORY_TOOL, DELETE_MEMORY_TOOL]
         response = self.llm.generate_response(messages=messages, tools=tools)
@@ -189,9 +184,7 @@ class Memory(MemoryBase):
                 function_name = tool_call["name"]
                 function_to_call = available_functions[function_name]
                 function_args = tool_call["arguments"]
-                logging.info(
-                    f"[openai_func] func: {function_name}, args: {function_args}"
-                )
+                logging.info(f"[openai_func] func: {function_name}, args: {function_args}")
 
                 # Pass metadata to the function if it requires it
                 if function_name in ["add_memory", "update_memory"]:
@@ -250,9 +243,7 @@ class Memory(MemoryBase):
             filters["run_id"] = run_id
 
         capture_event("mem0.get_all", self, {"filters": len(filters), "limit": limit})
-        memories = self.vector_store.list(
-            name=self.collection_name, filters=filters, limit=limit
-        )
+        memories = self.vector_store.list(name=self.collection_name, filters=filters, limit=limit)
         return [
             MemoryItem(
                 id=mem.id,
@@ -262,9 +253,7 @@ class Memory(MemoryBase):
             for mem in memories[0]
         ]
 
-    def search(
-        self, query, user_id=None, agent_id=None, run_id=None, limit=100, filters=None
-    ):
+    def search(self, query, user_id=None, agent_id=None, run_id=None, limit=100, filters=None):
         """
         Search for memories.
 
@@ -384,9 +373,7 @@ class Memory(MemoryBase):
         return memory_id
 
     def _update_memory_tool(self, memory_id, data, metadata=None):
-        existing_memory = self.vector_store.get(
-            name=self.collection_name, vector_id=memory_id
-        )
+        existing_memory = self.vector_store.get(name=self.collection_name, vector_id=memory_id)
         prev_value = existing_memory.payload.get("data")
 
         new_metadata = metadata or {}
@@ -404,9 +391,7 @@ class Memory(MemoryBase):
 
     def _delete_memory_tool(self, memory_id):
         logging.info(f"Deleting memory with {memory_id=}")
-        existing_memory = self.vector_store.get(
-            name=self.collection_name, vector_id=memory_id
-        )
+        existing_memory = self.vector_store.get(name=self.collection_name, vector_id=memory_id)
         prev_value = existing_memory.payload["data"]
         self.vector_store.delete(name=self.collection_name, vector_id=memory_id)
         self.db.add_history(memory_id, prev_value, None, "delete", is_deleted=1)
