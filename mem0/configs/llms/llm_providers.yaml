@@ -1,0 +1,100 @@
+providers:
+  - name: doubao
+    base_url: https://ark.cn-beijing.volces.com/api/v3
+    models:
+      - name: ep-20240613025117-6t5dz # pro-4k-character
+        max_tokens: 4096
+      - name: ep-20240613070218-wptqg # pro-4k-functioncall
+        max_tokens: 4096
+      - name: ep-20240613025146-wkkqm # pro-32k-character
+        max_tokens: 32000
+      - name: ep-20240613070322-dsgks # pro-32k-functioncall
+        max_tokens: 32000
+      - name: ep-20240613064852-rr4s4 # pro-128k-character
+        max_tokens: 128000
+      - name: ep-20240613065128-hcwkx # lite-4k-character
+        max_tokens: 4096
+      - name: ep-20240613065808-m8swj # lite-32k
+        max_tokens: 32000
+      - name: ep-20240613065856-694fw # lite-128k
+        max_tokens: 128000
+      - name: ep-20240613070020-zmfrj # text embedding
+        max_tokens: 4096
+    rate_limit: 10000
+  - name: g4f
+    base_url: https://api.g4f.icu/v1
+    models:
+      - name: gpt-3.5-turbo
+        max_tokens: 4096
+      - name: gpt-4o
+        max_tokens: 8192
+      - name: gpt-4o-all
+      - name: gpt-4o-super
+      - name: gpt-4
+      - name: gpt-4-turbo
+      - name: gpt-4-all
+      - name: gpt-4-vision-preview
+      - name: dall-e-3
+      - name: dall-e-2
+      - name: gemini-1.5-flash-latest
+      - name: gemini-1.5-pro-latest
+      - name: gemini-pro-vision
+      - name: llama3-70b-8192
+      - name: midjourney
+      - name: mj_blend
+      - name: mj_custom_zoom
+      - name: mj_describe
+      - name: mj_high_variation
+      - name: mj_imagine
+      - name: mj_low_variation
+      - name: mj_modal
+      - name: mj_pan
+      - name: mj_reroll
+      - name: mj_shorten
+      - name: mj_uploads
+      - name: mj_upscale
+      - name: mj_variation
+      - name: mj_zoom
+      - name: mj-chat
+      - name: suno-v3
+      - name: swap_face
+      - name: tts-1
+      - name: tts-1-1106
+      - name: tts-1-hd
+      - name: tts-1-1106
+      - name: whisper-1
+    rate_limit: 60
+
+  - name: openrouter
+    base_url: https://openrouter.ai/api/v1
+    models:
+      - name: openai/gpt-3.5-turbo
+        max_tokens: 4096
+      - name: openai/gpt-4o
+        max_tokens: 8192
+      - name: openai/gpt-4o-2024-05-13
+        max_tokens: 128000
+      - name: cohere/command-r
+        max_tokens: 128000
+      - name: cohere/command-r-plus
+        max_tokens: 128000
+      - name: meta-llama/llama-3-70b-instruct
+        max_tokens: 8192
+      - name: anthropic/claude-3-haiku
+        max_tokens: 200000
+      - name: anthropic/claude-3-sonnet
+        max_tokens: 200000
+      - name: google/gemini-flash-1.5
+        max_tokens: 2800000
+      - name: google/gemini-pro-1.5
+        max_tokens: 2800000
+      - name: google/gemini-pro
+        max_tokens: 92000
+      - name: google/gemini-pro-vision
+        max_tokens: 46000
+      - name: gryphe/mythomax-l2-13b
+      - name: mistralai/mistral-tiny
+        max_tokens: 32000
+    rate_limit: 60
+
+

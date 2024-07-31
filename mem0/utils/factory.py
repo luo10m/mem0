@@ -11,6 +11,9 @@ def load_class(class_type):
 
 class LlmFactory:
     provider_to_class = {
+        "g4f": "mem0.llms.g4f.py.G4fLLM",
+        "openrouter": "mem0.llms.openrouter.py.OpenRouterLLM",
+        "doubao": "mem0.llms.doubao.py.DoubaoLLM",
         "ollama": "mem0.llms.ollama.py.OllamaLLM",
         "openai": "mem0.llms.openai.OpenAILLM",
         "groq": "mem0.llms.groq.GroqLLM",
@@ -32,6 +35,9 @@ class LlmFactory:
 
 class EmbedderFactory:
     provider_to_class = {
+        "g4f": "mem0.embeddings.g4f.G4fEmbedding",
+        "openrouter": "mem0.embeddings.openrouter.OpenRouterEmbedding",
+        "doubao": "mem0.embeddings.doubao.DoubaoEmbedding",
         "openai": "mem0.embeddings.openai.OpenAIEmbedding",
         "ollama": "mem0.embeddings.ollama.OllamaEmbedding",
         "huggingface": "mem0.embeddings.huggingface.HuggingFaceEmbedding",
