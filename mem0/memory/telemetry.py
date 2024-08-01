@@ -25,9 +25,7 @@ class AnonymousTelemetry:
             "machine": platform.machine(),
             **properties,
         }
-        self.posthog.capture(
-            distinct_id=self.user_id, event=event_name, properties=properties
-        )
+        self.posthog.capture(distinct_id=self.user_id, event=event_name, properties=properties)
 
     def identify_user(self, user_id, properties=None):
         if properties is None:
@@ -40,7 +38,7 @@ class AnonymousTelemetry:
 
 # Initialize AnonymousTelemetry
 telemetry = AnonymousTelemetry(
-    project_api_key="phc_hgJkUVJFYtmaJqrvf6CYN67TIQ8yhXAkWzUn9AMU4yX",
+    project_api_key="phx_133DodPZsIb1ZahpgP53jmipiueEiMtBAng7eYDemt2fnvDf",
     host="https://us.i.posthog.com",
 )
 

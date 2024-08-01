@@ -5,15 +5,26 @@ from openai import OpenAI
 
 from mem0.llms.base import LLMBase
 from mem0.configs.llms.base import BaseLlmConfig
+from mem0.configs.llms.config_loader import LlmProvidersConfig
 
-class OpenAILLM(LLMBase):
+
+class DoubaoLLM(LLMBase):
     def __init__(self, config: Optional[BaseLlmConfig] = None):
         super().__init__(config)
 
+        # 获取 Doubao 的配置
+        doubao_config = next(p for p in LlmProvidersConfig["providers"] if p["name"] == "doubao")
+
         if not self.config.model:
-            self.config.model="gpt-4o"
-        self.client = OpenAI()
-    
+            self.config.model = "ep-20240613070218-wptqg"  # pro, functioncall
+
+        # 使用配置中的 base_url
+        self.client = OpenAI(base_url=doubao_config["base_url"])
+        # 获取模型的 max_tokens
+        self.max_tokens = next(
+            m["max_tokens"] for m in doubao_config["models"] if m["name"] == self.config.model
+        )
+
     def _parse_response(self, response, tools):
         """
         Process the response based on whether tools are used or not.
@@ -26,18 +37,17 @@ class OpenAILLM(LLMBase):
             str or dict: The processed response.
         """
         if tools:
-            processed_response = {
-                "content": response.choices[0].message.content,
-                "tool_calls": []
-            }
-            
+            processed_response = {"content": response.choices[0].message.content, "tool_calls": []}
+
             if response.choices[0].message.tool_calls:
                 for tool_call in response.choices[0].message.tool_calls:
-                    processed_response["tool_calls"].append({
-                        "name": tool_call.function.name,
-                        "arguments": json.loads(tool_call.function.arguments)
-                    })
-            
+                    processed_response["tool_calls"].append(
+                        {
+                            "name": tool_call.function.name,
+                            "arguments": json.loads(tool_call.function.arguments),
+                        }
+                    )
+
             return processed_response
         else:
             return response.choices[0].message.content
@@ -62,11 +72,11 @@ class OpenAILLM(LLMBase):
             str: The generated response.
         """
         params = {
-            "model": self.config.model, 
-            "messages": messages, 
-            "temperature": self.config.temperature, 
-            "max_tokens": self.config.max_tokens, 
-            "top_p": self.config.top_p
+            "model": self.config.model,
+            "messages": messages,
+            "temperature": self.config.temperature,
+            "max_tokens": self.max_tokens,  # self.config.max_tokens,
+            "top_p": self.config.top_p,
         }
         if response_format:
             params["response_format"] = response_format

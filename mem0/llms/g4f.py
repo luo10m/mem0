@@ -12,11 +12,18 @@ class G4fLLM(LLMBase):
     def __init__(self, config: Optional[BaseLlmConfig] = None):
         super().__init__(config)
 
-        if not self.config.provider:
-            self.config.provider = "g4f"
+        # 获取 g4f 的配置
+        g4f_config = next(p for p in LlmProvidersConfig["providers"] if p["name"] == "g4f")
+
         if not self.config.model:
             self.config.model = "gpt-4o-mini"
-        self.client = OpenAI()
+
+        # 使用配置中的 base_url
+        self.client = OpenAI(base_url=g4f_config["base_url"])
+        # 获取模型的 max_tokens
+        self.max_tokens = next(
+            m["max_tokens"] for m in g4f_config["models"] if m["name"] == self.config.model
+        )
 
     def _parse_response(self, response, tools):
         """
@@ -65,11 +72,10 @@ class G4fLLM(LLMBase):
             str: The generated response.
         """
         params = {
-            ""
             "model": self.config.model,
             "messages": messages,
             "temperature": self.config.temperature,
-            "max_tokens": self.config.max_tokens,
+            "max_tokens": self.max_tokens,  # 使用从配置中获取的，而不是self.config.max_tokens,
             "top_p": self.config.top_p,
         }
         if response_format:

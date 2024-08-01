@@ -63,6 +63,9 @@ providers:
       - name: tts-1-hd
       - name: tts-1-1106
       - name: whisper-1
+      - name: text-embedding-3-large
+      - name: text-embedding-3-small
+      - name: text-embedding-ada-002
     rate_limit: 60
 
   - name: openrouter

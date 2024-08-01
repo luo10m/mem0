@@ -1,11 +1,15 @@
 from openai import OpenAI
 
 from mem0.embeddings.base import EmbeddingBase
+from mem0.configs.llms.config_loader import LlmProvidersConfig
 
 
-class OpenAIEmbedding(EmbeddingBase):
+class G4fEmbedding(EmbeddingBase):
     def __init__(self, model="text-embedding-3-small"):
-        self.client = OpenAI()
+        # 获取 g4f 配置
+        g4f_config = next(p for p in LlmProvidersConfig["providers"] if p["name"] == "g4f")
+        # 使用配置中的 base_url
+        self.client = OpenAI(base_url=g4f_config["base_url"])
         self.model = model
         self.dims = 1536
 
@@ -20,8 +24,4 @@ class OpenAIEmbedding(EmbeddingBase):
             list: The embedding vector.
         """
         text = text.replace("\n", " ")
-        return (
-            self.client.embeddings.create(input=[text], model=self.model)
-            .data[0]
-            .embedding
-        )
+        return self.client.embeddings.create(input=[text], model=self.model).data[0].embedding
