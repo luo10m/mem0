@@ -1,5 +1,6 @@
 import platform
 import sys
+import os
 
 from posthog import Posthog
 
@@ -38,7 +39,7 @@ class AnonymousTelemetry:
 
 # Initialize AnonymousTelemetry
 telemetry = AnonymousTelemetry(
-    project_api_key="phx_133DodPZsIb1ZahpgP53jmipiueEiMtBAng7eYDemt2fnvDf",
+    project_api_key=os.environ.get("POSTHOG_PROJECT_API_KEY"),  # Default Project key
     host="https://us.i.posthog.com",
 )
 
